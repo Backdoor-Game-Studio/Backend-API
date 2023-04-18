@@ -4,7 +4,6 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const { json } = require('body-parser');
-const mysql = require('promise-mysql');
 const env = require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
@@ -13,31 +12,10 @@ app.use(cors({origin: "*"}));
 app.use(express.json({type:'application/json'}));
 app.use(express.urlencoded({extended: true}));
 
-let db;
-let tryNumber = 0;
-const maxTryNumber = 50;
+const connectDB = require("./modules/connectDB");
+const validator = require("./modules/validators")
 
-const connectDB = async () => {
-    await mysql.createConnection({
-            host: process.env.DATABASE_HOST,
-            port: process.env.DATABASE_PORT,
-            user: process.env.DATABASE_USER,
-            password: process.env.DATABASE_PASS,
-            database: process.env.DATABASE_NAME       
-    }).then(connection => {
-        db = connection;
-        if (tryNumber != 0) {
-            tryNumber = 0;
-            console.log("The connection has been restored!");
-        }
-    }).catch(error => {
-        console.error(`\n[mysql-connection-error]:\n${error}\nstay alive attempts: ${tryNumber}\n`);
-        tryNumber++;
-        tryNumber != maxTryNumber ? setTimeout(connectDB, 5000) : server.close();
-    });
-}
-
-connectDB();
+let db = connectDB.connect().then(connection => db = connection);
 
 const server_port = 4545;
 
@@ -45,17 +23,10 @@ const server = app.listen(server_port, () => {
     try {
         console.log(`Server running on port: ${server_port}`);
     } catch (error) {
-        console.error(`\n[server-listen-error]:\n${error}\n`);      
+        console.error(`\n[server-listen-error]:\n${error}\n`);
     }
 });
 
-const isUsernameValid = (username) => {
-    
-    const res = /^[A-Za-z0-9_\.]+$/.exec(username); // eslint-disable-line
-    const valid = !!res;
-    return valid;
-
-}
 
 const isUsernameTaken = async (username) => {
     try {
@@ -70,20 +41,19 @@ const isUsernameTaken = async (username) => {
     }
 }
 
-const isLengthValid = (username, password) => {
 
-    if (username.length >= 6 && username.length <= 16 && password.length >= 6) return true;
-    else return false;
+app.post("/register", async (req, res) => {
+    try {
+        const username = req.body.username;
+        const email = req.body.email;
+        const password = req.body.password;
 
-}
+        
 
-const isEmailValid = (email) => {
-
-	const res = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.exec(email); // eslint-disable-line
-    const valid = !!res;
-    return valid;
-
-}
+    } catch (error) {
+        console.error(`\n[app-post-register-error]:\n${error}\n`); 
+    }
+});
 
 
 app.post("/login", async (req, res) => {
@@ -91,29 +61,25 @@ app.post("/login", async (req, res) => {
     try {
         const username = req.body.username;
         const password = req.body.password;
-        let sendData = false;
 
         if (!username || !password) return res.json("wrong_request");
 
-        if (!isLengthValid(username, password)) return res.json("short_or_long");
+        if (!validator.isLengthValid(username, password)) return res.json("short_or_long");
         //if (! await isUsernameTaken(username)) return res.json("user_not_exist");
 
         const checkUser = "SELECT `id` FROM `Users` WHERE `username` = (?) AND `password` = (?);"
         let rows = await db.query(checkUser, [username, password]);
 
-        if(rows.length !== 0) sendData = true;
-        else return res.json("wrong_auth_data");
-
-        if (sendData) {
+        if(rows.length !== 0) {
 
             const user = {id: rows[0].id};
 
             const accessToken = generateAccessToken(user);
             const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN, {expiresIn: "30m"});
 
-            res.json({ accessToken: accessToken, refreshToken: refreshToken });
+            return res.json({ accessToken: accessToken, refreshToken: refreshToken });
 
-        }
+        } else return res.json("wrong_auth_data");
 
     } catch (error) {
         console.error(`\n[app-post-login-error]:\n${error}\n`);
