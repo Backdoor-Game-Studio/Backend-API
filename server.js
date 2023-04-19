@@ -28,27 +28,36 @@ const server = app.listen(server_port, () => {
 });
 
 
-const isUsernameTaken = async (username) => {
-    try {
-        const command = "SELECT `username` FROM `Users` WHERE `username` = ";
-    
-        let rows = await db.query(command + "(?)", [username]);
-    
-        if (rows.length != 0) return true;
-        else return false;
-    } catch (error) {
-        console.error(`\n[isUsernameTaken-error]:\n${error}\n`);
-    }
-}
-
-
 app.post("/register", async (req, res) => {
     try {
         const username = req.body.username;
         const email = req.body.email;
         const password = req.body.password;
 
+        if (!username || !email || !password) return res.json("wrong_request");
+        if (!validator.isLengthValid(username, password)) return res.json("short_or_long");
+        if (!validator.isUsernameValid(username)) return res.json("invalid_username");
+        if (!validator.isEmailValid(email)) return res.json("invalid_email");
+
+        if (await validator.isUsernameTaken(db, username)) return res.json("username_taken");
+        if (await validator.isEmailTaken(db, email)) return res.json("email_taken");
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        const command = "INSERT INTO `Users` (`id`, `username`, `email`, `password`) VALUES (NULL, (?), (?), (?));";
+        let rows = await db.query(command, [username, email, hashedPassword]);
         
+        if (rows.affectedRows >= 1) {
+
+            const user = {id: rows.insertId};
+
+            const accessToken = generateAccessToken(user);
+            const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN, {expiresIn: "30m"});
+
+            return res.json({ accessToken: accessToken, refreshToken: refreshToken });
+
+        } else return res.json("invalid_request")
 
     } catch (error) {
         console.error(`\n[app-post-register-error]:\n${error}\n`); 
@@ -62,13 +71,16 @@ app.post("/login", async (req, res) => {
         const username = req.body.username;
         const password = req.body.password;
 
+        const hashedPassword = await validator.getHashedPassword(db, username);
+
         if (!username || !password) return res.json("wrong_request");
 
         if (!validator.isLengthValid(username, password)) return res.json("short_or_long");
-        //if (! await isUsernameTaken(username)) return res.json("user_not_exist");
+
+        if (!await bcrypt.compare(password, hashedPassword)) return res.json("wrong_auth_data");
 
         const checkUser = "SELECT `id` FROM `Users` WHERE `username` = (?) AND `password` = (?);"
-        let rows = await db.query(checkUser, [username, password]);
+        let rows = await db.query(checkUser, [username, hashedPassword]);
 
         if(rows.length !== 0) {
 
@@ -147,29 +159,3 @@ app.get("/userinfo", authenticateToken, async (req, res) => {
         console.error(`\n[app-get-userInfo-error]:\n${error}\n`);
     }
 });
-
-//app.get("/test", (req, res) => {
-//    try {
-//        res.send("mukszik");
-//    } catch (error) {
-//        console.error(error); 
-//    }
-//});
-
-//app.post("/address", async (req, res) => {
-//    try {
-//        let uniqueId = req.body.address;
-//        let name = req.body.name;
-//        res.send(uniqueId + " " + name);
-//        //const uniqueIdIsTakenCheck = "SELECT address FROM Users WHERE address = ";
-//        //
-//        //let rows = await db.query(uniqueIdIsTakenCheck + "(?)", [uniqueId])
-//        //if(rows.length !== 0) res.send(rows);
-//        //else {
-//        //  console.error(rows);
-//        //  //res.send("avatar_not_found")       
-//        //}
-//    } catch (error) {
-//        console.error(error);
-//    }
-//});
