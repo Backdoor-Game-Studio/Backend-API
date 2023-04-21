@@ -45,12 +45,20 @@ const authenticateToken = (req, res, next) => {
     });
 }
 
-app.post("/register", async (req, res) => auth.register(db, generateAccessToken, req, res));
+app.post("/auth/register", async (req, res) => auth.register(db, generateAccessToken, req, res));
 
-app.post("/login", async (req, res) => auth.login(db, generateAccessToken, req, res));
+app.post("/auth/login", async (req, res) => auth.login(db, generateAccessToken, req, res));
 
 app.post("/token", (req, res) => token.getNewToken(generateAccessToken, req, res));
 
-app.get("/saves", authenticateToken, async (req, res) => saves.getSaves(db, req, res));
+app.get("/saves/getsaves", authenticateToken, async (req, res) => saves.getSaves(db, req, res));
+
+app.post("/saves/createsave", authenticateToken, async (req, res) => saves.createSave(db, req, res));
+
+app.post("/saves/delsave", authenticateToken, async (req, res) => saves.deleteSave(db, req, res));
+
+app.post("/saves/editsave", authenticateToken, async (req, res) => saves.editSave(db, req, res));
+
+app.post("/saves/editsavename", authenticateToken, async (req, res) => saves.editSaveName(db, req, res));
 
 app.get("/userinfo", authenticateToken, async (req, res) => userinfo.getUserInfo(db, req, res));

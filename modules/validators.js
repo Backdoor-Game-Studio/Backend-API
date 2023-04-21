@@ -61,6 +61,25 @@ const getHashedPassword = async (db, username) => {
     } catch (error) {
         console.error(`\n[getHashedPassword-error]:\n${error}\n`);
     }
+
 }
 
-module.exports = {isUsernameValid, isLengthValid, isEmailValid, isUsernameTaken, isEmailTaken, getHashedPassword};
+const isValidSave = (save) => {
+    try {
+        const data = JSON.parse(save);
+
+        if (!data.Save || !data.Position || !data.Items) return false;
+        if (!data.Save.name || !data.Save.utc || !data.Save.date || !data.Save.time) return false;
+        if (!data.Position.map || !data.Position.player || !data.Position.entity) return false;
+        if (!data.Position.player.x || !data.Position.player.y || !data.Position.player.z) return false;
+        if (!data.Position.entity.x || !data.Position.entity.y || !data.Position.entity.z) return false;
+        
+    } catch (error) {
+        return false;
+    }
+
+    return true;
+}
+
+
+module.exports = {isUsernameValid, isLengthValid, isEmailValid, isUsernameTaken, isEmailTaken, getHashedPassword, isValidSave};

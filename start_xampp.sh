@@ -1,15 +1,13 @@
 #!/bin/bash
 
-echo "┌──────────────────────────────┐"
-echo "│ XAMPP starter script running │"
-echo "└───────────────────────────0.1┘"
+echo "┌───────────────────────────────┐"
+echo "│ Server starter script running │"
+echo "└────────────────────────────0.1┘"
 
 route="/opt/lampp/lampp"
+#route="service mysql"
 
-echo -e "\nWaiting XAMPP services...\n"
-
+echo -e "\nStarting MySQL service..."
 sudo $route start
 
-sleep 2
-
-echo -e "\nFinished to start XAMPP services!\n"
+echo -e "\nFinished to start MySQL service!\n"
