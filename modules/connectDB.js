@@ -13,16 +13,17 @@ const db = mysql.createConnection({
 
 const connect = async () => {
 
+    console.log("Creating connection to MySQL service...");
+
     try {
 
         let getDb = await db;
-        console.log("Successfully connect database!");
-
+        console.log("Successfully connected MySQL service, try connecting to database...");
         return getDb;
 
     } catch (error) {
 
-        console.error(`\n[mysql-connection-error]:\n${error}\nstay alive mode is on!\n`);
+        console.error(`\n[mysql-createConnection-error]:\n${error}\nstay alive mode is on!\n`);
         setTimeout(connect, 5000);
 
     }

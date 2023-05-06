@@ -17,7 +17,10 @@ const token = require("./modules/token");
 const saves = require("./modules/saves");
 const userinfo = require("./modules/userinfo");
 
-let db = connectDB.connect().then(connection => db = connection);
+let db = connectDB.connect((error) => {throw error}).then(connection => {
+    db = connection;
+    console.log("Successfully connect to database!");
+});
 
 const server_port = 4545;
 
