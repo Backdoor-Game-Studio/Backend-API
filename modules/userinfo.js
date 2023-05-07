@@ -9,6 +9,10 @@ const getUserInfo = async (db, req, res) => {
 
     } catch (error) {
         console.error(`\n[app-get-userInfo-error]:\n${error}\n`);
+        setTimeout(() => {
+            console.log(`Stay alive!`);
+            getUserInfo(db, req, res);
+        }, 5000);
     }
 }
 

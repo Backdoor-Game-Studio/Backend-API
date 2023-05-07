@@ -11,6 +11,10 @@ const getSaves = async (db, req, res) => {
 
     } catch (error) {
         console.error(`\n[app-get-saves-error]:\n${error}\n`);
+        setTimeout(() => {
+            console.log(`Stay alive!`);
+            getSaves(db, req, res);
+        }, 5000);
     }
 }
 
@@ -45,6 +49,10 @@ const deleteSave = async (db, req, res) => {
         
     } catch (error) {
         console.error(`\n[app-get-delete_save-error]:\n${error}\n`);
+        setTimeout(() => {
+            console.log(`Stay alive!`);
+            deleteSave(db, req, res);
+        }, 5000);
     }
 }
 
@@ -81,6 +89,10 @@ const createSave = async (db, req, res) => {
 
     } catch (error) {
         console.error(`\n[app-get-create_save-error]:\n${error}\n`);
+        setTimeout(() => {
+            console.log(`Stay alive!`);
+            createSave(db, req, res);
+        }, 5000);
     }
 }
 
@@ -115,7 +127,11 @@ const editSave = async (db, req, res) => {
         } else return res.json("not_valid_save");
 
     } catch (error) {
-        console.error(`\n[app-get-edit_save-error]:\n${error}\n`); 
+        console.error(`\n[app-get-edit_save-error]:\n${error}\n`);
+        setTimeout(() => {
+            console.log(`Stay alive!`);
+            editSave(db, req, res);
+        }, 5000);
     }
 }
 
@@ -152,7 +168,11 @@ const editSaveName = async (db, req, res) => {
 
 
     } catch (error) {
-        console.error(`\n[app-get-edit_save_name-error]:\n${error}\n`); 
+        console.error(`\n[app-get-edit_save_name-error]:\n${error}\n`);
+        setTimeout(() => {
+            console.log(`Stay alive!`);
+            editSaveName(db, req, res);
+        }, 5000); 
     }
 }
 

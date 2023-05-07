@@ -33,6 +33,10 @@ const login = async (db, generateAccessToken, req, res) => {
 
     } catch (error) {
         console.error(`\n[app-post-login-error]:\n${error}\n`);
+        setTimeout(() => {
+            console.log(`Stay alive!`);
+            login(db, generateAccessToken, req, res);
+        }, 5000);
     }
 }
 
@@ -68,7 +72,11 @@ const register = async (db, generateAccessToken, req, res) => {
         } else return res.json("invalid_request")
 
     } catch (error) {
-        console.error(`\n[app-post-register-error]:\n${error}\n`); 
+        console.error(`\n[app-post-register-error]:\n${error}\n`);
+        setTimeout(() => {
+            console.log(`Stay alive!`);
+            register(db, generateAccessToken, req, res);
+        }, 5000);
     }
 }
 

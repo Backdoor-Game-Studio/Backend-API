@@ -1,7 +1,7 @@
 const mysql = require('promise-mysql');
 const env = require("dotenv").config();
 
-const db = mysql.createConnection({
+const mysqlConnect = mysql.createPool({
 
     host: process.env.DATABASE_HOST,
     port: process.env.DATABASE_PORT,
@@ -13,12 +13,14 @@ const db = mysql.createConnection({
 
 const connect = async () => {
 
-    console.log("Creating connection to MySQL service...");
+    console.log("Creating connection to MySQL service and database...");
+
 
     try {
 
-        let getDb = await db;
-        console.log("Successfully connected MySQL service, try connecting to database...");
+        const getDb = await mysqlConnect;
+
+        console.log("Successfully connected!");
         return getDb;
 
     } catch (error) {
